@@ -22,7 +22,7 @@ jobs:
       - name: pull repo
         uses: actions/checkout@v3
       - name: check paths
-        run: ls && ls/freyja
+        run: ls && ls ./freyja
 
       - name: Get current date
         id: date
