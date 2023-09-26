@@ -21,6 +21,7 @@ jobs:
 
       - name: pull repo
         uses: actions/checkout@v3
+        
       - name: check paths
         run: ls && ls ./freyja
 
@@ -46,15 +47,16 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./freyja/Dockerfile
+          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.latest_release.outputs.release }}
           push: true
           tags: quay.io/uphl/freyja-test:${{ steps.latest_release.outputs.release }}-${{ steps.parse.date.date }}
 
       - name: Build and push latest tag to Quay
-        id: push
+        id: latest
         uses: docker/build-push-action@v3
         with:
-          context: freyja
-          file: Dockerfile
+          file: ./freyja/Dockerfile
+          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.latest_release.outputs.release }}
           push: true
           tags: quay.io/uphl/freyja-test:latest   
 
