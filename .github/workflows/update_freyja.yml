@@ -19,7 +19,9 @@ jobs:
           repository: andersen-lab/Freyja
           type: "stable"
 
-      - uses: actions/checkout@v3
+      - name: pull repo
+        uses: actions/checkout@v3
+        run: ls
 
       - name: Get current date
         id: date
