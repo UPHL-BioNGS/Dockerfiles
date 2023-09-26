@@ -59,7 +59,7 @@ jobs:
           file: ./freyja/Dockerfile
           build-args: FREYJA_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
           push: true
-          tags: quay.io/uphl/freyja-test:${{ steps.strip.outputs.version }}-${{ steps.parse.date.date }}
+          tags: quay.io/uphl/freyja-test:${{ steps.strip.outputs.version }}-${{ steps.date.outputs.date }}
 
       - name: Build and push latest tag to Quay
         id: latest
