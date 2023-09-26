@@ -18,6 +18,15 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: andersen-lab/Freyja
           type: "stable"
+          
+      - uses: actions/checkout@v3
+     
+      - name: Remove V
+        id: strip
+        run: |
+          version=$(echo "${{ steps.latest_release.outputs.release }}" | sed 's/V//g' | sed 's/v//g' )
+          echo "The version is $version"
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: pull repo
         uses: actions/checkout@v3
@@ -29,6 +38,7 @@ jobs:
         id: date
         run: |
           date=$(date '+%Y-%m-%d')
+          echo "the date is $date"
           echo "date=$date" >> $GITHUB_OUTPUT
         
       - name: Set up Docker Buildx
@@ -47,16 +57,16 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./freyja/Dockerfile
-          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.latest_release.outputs.release }}
+          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
           push: true
-          tags: quay.io/uphl/freyja-test:${{ steps.latest_release.outputs.release }}-${{ steps.parse.date.date }}
+          tags: quay.io/uphl/freyja-test:${{ steps.strip.outputs.version }}-${{ steps.parse.date.date }}
 
       - name: Build and push latest tag to Quay
         id: latest
         uses: docker/build-push-action@v3
         with:
           file: ./freyja/Dockerfile
-          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.latest_release.outputs.release }}
+          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
           push: true
           tags: quay.io/uphl/freyja-test:latest   
 
