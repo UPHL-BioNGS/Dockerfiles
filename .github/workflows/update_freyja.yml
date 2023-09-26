@@ -19,6 +19,8 @@ jobs:
           repository: andersen-lab/Freyja
           type: "stable"
 
+      - uses: actions/checkout@v3
+
       - name: Get current date
         id: date
         run: |
