@@ -16,7 +16,7 @@ jobs:
         id: latest_release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: https://github.com/andersen-lab/Freyja
+          repository: andersen-lab/Freyja
           type: "stable"
 
       - name: Get current date
