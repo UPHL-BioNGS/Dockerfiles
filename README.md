@@ -1,2 +1,3 @@
-# Dockerfiles
-A collection of Dockerfiles for the images that we use
+# At UPHL, we use Dockerfiles
+
+Sometimes these are only useful to us, and so we have a place to put them.
