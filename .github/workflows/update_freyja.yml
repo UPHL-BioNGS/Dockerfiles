@@ -22,7 +22,7 @@ jobs:
       - name: pull repo
         uses: actions/checkout@v3
       - name: check paths
-        run: ls
+        run: ls && ls/freyja
 
       - name: Get current date
         id: date
@@ -45,7 +45,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v3
         with:
-          context: freyja
+          context: ./freyja
           file: Dockerfile
           push: true
           tags: quay.io/uphl/freyja-test:${{ steps.latest_release.outputs.release }}-${{ steps.parse.date.date }}
