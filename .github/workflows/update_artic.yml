@@ -31,14 +31,14 @@ jobs:
         run: |
           version=$(echo "${{ steps.latest_artic.outputs.release }}" | sed 's/V//g' | sed 's/v//g' )
           echo "The version is $version"
-          echo "artic_version=$version" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Remove V from medaka
         id: strip_medaka
         run: |
           version=$(echo "${{ steps.latest_medaka.outputs.release }}" | sed 's/V//g' | sed 's/v//g' )
           echo "The version is $version"
-          echo "medaka_version=$version" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: pull repo
         uses: actions/checkout@v3
@@ -61,14 +61,14 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./artic/Dockerfile
-          build-args: ARTIC_VER=${{ steps.strip.outputs.artic_version }},MEDAKA_VER=${{ steps.strip.outputs.medaka_version }}
+          build-args: ARTIC_VER=${{ steps.strip_artic.outputs.version }},MEDAKA_VER=${{ steps.strip_medaka.outputs.version }}
           push: true
-          tags: quay.io/uphl/artic:${{ steps.strip.outputs.artic_version }}-${{ steps.strip.outputs.medaka_version }}
+          tags: quay.io/uphl/artic:${{ steps.strip_artic.outputs.version }}-${{ steps.strip_medaka.outputs.version }}
 
       - name: Build and push latest tag to Quay
         uses: docker/build-push-action@v3
         with:
           file: ./artic/Dockerfile
-          build-args: ARTIC_VER=${{ steps.strip.outputs.artic_version }},MEDAKA_VER=${{ steps.strip.outputs.medaka_version }}
+          build-args: ARTIC_VER=${{ steps.strip_artic.outputs.version }},MEDAKA_VER=${{ steps.strip_medaka.outputs.version }}
           push: true
           tags: quay.io/uphl/artic:latest   
