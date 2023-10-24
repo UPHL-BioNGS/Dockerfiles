@@ -61,7 +61,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./artic/Dockerfile
-          build-args: ARTIC_VER=${{ steps.strip_artic.outputs.version }},MEDAKA_VER=${{ steps.strip_medaka.outputs.version }}
+          build-args: |
+            ARTIC_VER=${{ steps.strip_artic.outputs.version }}
+            MEDAKA_VER=${{ steps.strip_medaka.outputs.version }}
           push: true
           tags: quay.io/uphl/artic:${{ steps.strip_artic.outputs.version }}-${{ steps.strip_medaka.outputs.version }}
 
@@ -69,6 +71,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./artic/Dockerfile
-          build-args: ARTIC_VER=${{ steps.strip_artic.outputs.version }},MEDAKA_VER=${{ steps.strip_medaka.outputs.version }}
+          build-args: |
+            ARTIC_VER=${{ steps.strip_artic.outputs.version }}
+            MEDAKA_VER=${{ steps.strip_medaka.outputs.version }}
           push: true
           tags: quay.io/uphl/artic:latest   
