@@ -1,0 +1,74 @@
+name: Update Artic
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: '30 5 * * TUE'
+
+run-name: Updating Artic
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest artic release
+        uses: rez0n/actions-github-release@main
+        id: latest_artic
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: artic-network/fieldbioinformatics
+          type: "stable"
+
+      - name: Get latest medaka release
+        uses: rez0n/actions-github-release@main
+        id: latest_medaka
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: nanoporetech/medaka
+          type: "stable" 
+     
+      - name: Remove V from artic
+        id: strip_artic
+        run: |
+          version=$(echo "${{ steps.latest_artic.outputs.release }}" | sed 's/V//g' | sed 's/v//g' )
+          echo "The version is $version"
+          echo "artic_version=$version" >> $GITHUB_OUTPUT
+
+      - name: Remove V from medaka
+        id: strip_medaka
+        run: |
+          version=$(echo "${{ steps.latest_medaka.outputs.release }}" | sed 's/V//g' | sed 's/v//g' )
+          echo "The version is $version"
+          echo "medaka_version=$version" >> $GITHUB_OUTPUT
+
+      - name: pull repo
+        uses: actions/checkout@v3
+        
+      - name: check paths
+        run: ls && ls ./artic
+        
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Quay
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build and push to Quay
+        uses: docker/build-push-action@v3
+        with:
+          file: ./artic/Dockerfile
+          build-args: ARTIC_VER=${{ steps.strip.outputs.artic_version }},MEDAKA_VER=${{ steps.strip.outputs.medaka_version }}
+          push: true
+          tags: quay.io/uphl/artic:${{ steps.strip.outputs.artic_version }}-${{ steps.strip.outputs.medaka_version }}
+
+      - name: Build and push latest tag to Quay
+        uses: docker/build-push-action@v3
+        with:
+          file: ./artic/Dockerfile
+          build-args: ARTIC_VER=${{ steps.strip.outputs.artic_version }},MEDAKA_VER=${{ steps.strip.outputs.medaka_version }}
+          push: true
+          tags: quay.io/uphl/artic:latest   
