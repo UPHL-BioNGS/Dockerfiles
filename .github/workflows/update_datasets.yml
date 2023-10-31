@@ -30,7 +30,14 @@ jobs:
 
       - name: pull repo
         uses: actions/checkout@v3
-        
+
+      - name: Get current date
+        id: date
+        run: |
+          date=$(date '+%Y-%m-%d')
+          echo "the date is $date"
+          echo "date=$date" >> $GITHUB_OUTPUT
+          
       - name: check paths
         run: ls && ls ./datasets
         
@@ -51,7 +58,7 @@ jobs:
           file: ./datasets/Dockerfile
           build-args: DATASETS_VER=${{ steps.strip.outputs.version }}
           push: true
-          tags: quay.io/uphl/datasets:${{ steps.strip.outputs.version }}
+          tags: quay.io/uphl/datasets:${{ steps.strip.outputs.version }}-${{ steps.date.outputs.date }}
 
       - name: Build and push latest tag to Quay
         uses: docker/build-push-action@v3
