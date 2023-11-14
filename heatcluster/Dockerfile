@@ -26,12 +26,12 @@ RUN pip3 install --no-cache argparse pandas numpy pathlib seaborn matplotlib sci
 RUN wget -q https://github.com/DrB-S/heatcluster/archive/refs/tags/v${HEATCLUSTER_VER}.tar.gz && \
   tar -vxf v${HEATCLUSTER_VER}.tar.gz && \
   rm v${HEATCLUSTER_VER}.tar.gz && \
-  mkdir /work
+  mkdir /data
 
 ENV PATH=/heatcluster-${HEATCLUSTER_VER}:$PATH
 
-RUN HeatCluster.py --help
+RUN heatcluster.py --help
 
-CMD HeatCluster.py --help
+CMD heatcluster.py --help
 
 WORKDIR /data
