@@ -16,6 +16,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: DrB-S/heatcluster
+          type: "stable"
      
       - name: Remove V
         id: strip
