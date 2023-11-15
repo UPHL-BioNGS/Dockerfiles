@@ -1,0 +1,69 @@
+name: Update Medaka
+
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: '30 5 * * TUE'
+
+run-name: Updating Medaka
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest release
+        uses: rez0n/actions-github-release@main
+        id: latest_release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: nanoporetech/medaka
+          type: "stable"
+          
+      - uses: actions/checkout@v3
+     
+      - name: Remove V
+        id: strip
+        run: |
+          version=$(echo "${{ steps.latest_release.outputs.release }}" | sed 's/V//g' | sed 's/v//g' )
+          echo "The version is $version"
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: pull repo
+        uses: actions/checkout@v3
+
+      - name: Get current date
+        id: date
+        run: |
+          date=$(date '+%Y-%m-%d')
+          echo "the date is $date"
+          echo "date=$date" >> $GITHUB_OUTPUT
+          
+      - name: check paths
+        run: ls && ls ./medaka
+        
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Quay
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build and push to Quay
+        uses: docker/build-push-action@v3
+        with:
+          file: ./medaka/Dockerfile
+          build-args: MEDAKA_VER=${{ steps.strip.outputs.version }}
+          push: true
+          tags: quay.io/uphl/medaka:${{ steps.strip.outputs.version }}-${{ steps.date.outputs.date }}
+
+      - name: Build and push latest tag to Quay
+        uses: docker/build-push-action@v3
+        with:
+          file: ./medaka/Dockerfile
+          build-args: MEDAKA_VER=${{ steps.strip.outputs.version }}
+          push: true
+          tags: quay.io/uphl/medaka:latest   
