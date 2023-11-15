@@ -41,7 +41,8 @@ RUN micromamba install --name base -c conda-forge -c bioconda -c defaults medaka
     mkdir /data
 
 # this _should_ overwrite the medaka installed via micromamba
-RUN /opt/conda/bin/pip install --no-cache medaka==${MEDAKA_VER} pyabpoa==${PYABPOA_VER} && \
+RUN /opt/conda/bin/pip install --no-cache medaka==${MEDAKA_VER} && \
+    pip install pyabpoa==${PYABPOA_VER} && \
     medaka --version
 
 CMD medaka --help
