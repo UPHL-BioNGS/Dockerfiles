@@ -23,9 +23,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Python packages
 RUN pip3 install --no-cache argparse pandas numpy pathlib seaborn matplotlib scipy 
 
-RUN wget -q https://github.com/DrB-S/heatcluster/archive/refs/tags/v${HEATCLUSTER_VER}.tar.gz && \
-  tar -vxf v${HEATCLUSTER_VER}.tar.gz && \
-  rm v${HEATCLUSTER_VER}.tar.gz && \
+RUN wget -q https://github.com/DrB-S/heatcluster/archive/refs/tags/${HEATCLUSTER_VER}.tar.gz && \
+  tar -vxf ${HEATCLUSTER_VER}.tar.gz && \
+  rm ${HEATCLUSTER_VER}.tar.gz && \
   mkdir /data
 
 ENV PATH=/heatcluster-${HEATCLUSTER_VER}:$PATH
