@@ -53,7 +53,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./heatcluster/Dockerfile
-          build-args: HEATCLUSTER_VER=${{ steps.strip.outputs.version }}
+          build-args: HEATCLUSTER_VER=${{ steps.latest.outputs.release }}
           push: true
           tags: quay.io/uphl/heatcluster:${{ steps.strip.outputs.version }}-${{ steps.date.outputs.date }}
 
@@ -61,6 +61,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./heatcluster/Dockerfile
-          build-args: HEATCLUSTER_VER=${{ steps.strip.outputs.version }}
+          build-args: HEATCLUSTER_VER=${{ steps.latest.outputs.release }}
           push: true
           tags: quay.io/uphl/heatcluster:latest   
