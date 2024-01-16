@@ -1,17 +1,33 @@
-FROM python:3.9.17
+FROM python:3.9.17-slim as app
 
-ARG ACI_VER=0.1.20230815
+ARG ACI_VER="1.2.20231229"
 
-RUN pip install pandas matplotlib pysam
+# 'LABEL' instructions tag the image with metadata that might be important to the user
+LABEL base.image="python:3.9.17-slim"
+LABEL dockerfile.version="1"
+LABEL software="ACI"
+LABEL software.version="${ACI_VER}"
+LABEL description="Determines amplicon coverage"
+LABEL website="https://github.com/erinyoung/ACI"
+LABEL license="https://github.com/erinyoung/ACI/blob/main/LICENSE"
+LABEL maintainer="Erin Young"
+LABEL maintainer.email="eriny@utah.gov"
 
-RUN wget -q https://github.com/erinyoung/ACI/archive/refs/tags/${ACI_VER}.tar.gz && \
-    tar -xf ${ACI_VER}.tar.gz && \
-    rm -rf ${ACI_VER}.tar.gz
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
+    ca-certificates \
+    wget && \
+    apt-get autoclean && rm -rf /var/lib/apt/lists/*
 
-ENV PATH=/ACI-${ACI_VER}:$PATH
+# aci was taken on pip, but not conda
+RUN pip install --no-cache amplicon_coverage_inspector==${ACI_VER}
 
-RUN aci --help
+ENV PATH="$PATH" \
+    LC_ALL=C
+
+# 'CMD' instructions set a default command when the container is run. This is typically 'tool --help.'
+CMD [ "aci", "--help" ]
 
 WORKDIR /data
 
-CMD ["aci", "--help"]
+RUN aci --help
