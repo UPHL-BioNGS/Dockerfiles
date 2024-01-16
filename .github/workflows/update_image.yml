@@ -1,0 +1,58 @@
+name: Update Image
+on: 
+  workflow_dispatch:
+      inputs:
+        image:
+          description: "Image to Update."
+          required: true
+        version:
+          description: "Version to deploy."
+          required: true
+        arg:
+          description: "Arg to overwrite."
+          required: true
+
+run-name: Deploy ${{ github.event.inputs.image }} version ${{ github.event.inputs.version }}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: |
+          date=$(date '+%Y-%m-%d')
+          echo "the date is $date"
+          echo "date=$date" >> $GITHUB_OUTPUT
+
+      - name: pull repo
+        uses: actions/checkout@v3
+        
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Quay
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build and push to Quay
+        uses: docker/build-push-action@v3
+        with:
+          file: ./${{ github.event.inputs.image }}/Dockerfile
+          build-args: |
+            ${{ github.event.inputs.arg }}=${{ github.event.inputs.version }}
+          push: true
+          tags: quay.io/uphl/${{ github.event.inputs.image }}:${{ github.event.inputs.version }}-${{ steps.date.outputs.date }}
+
+      - name: Build and push to Quay
+        uses: docker/build-push-action@v3
+        with:
+          file: ./${{ github.event.inputs.image }}/Dockerfile
+          build-args: |
+            ${{ github.event.inputs.arg }}=${{ github.event.inputs.version }}
+          push: true
+          tags: quay.io/uphl/artic:latest   
