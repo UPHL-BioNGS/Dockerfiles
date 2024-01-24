@@ -42,6 +42,7 @@ jobs:
       - name: Build and push to Quay
         uses: docker/build-push-action@v3
         with:
+          context: ./${{ github.event.inputs.image }}
           file: ./${{ github.event.inputs.image }}/Dockerfile
           build-args: |
             ${{ github.event.inputs.arg }}=${{ github.event.inputs.version }}
