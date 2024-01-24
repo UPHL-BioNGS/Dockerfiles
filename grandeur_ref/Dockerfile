@@ -2,8 +2,7 @@ FROM staphb/ncbi-datasets:16.2.0 as fasta
 
     WORKDIR /ref
 
-    COPY accessions.txt .
-    COPY rename.sh .
+    COPY accessions.txt rename.sh /ref/
 
     RUN grep -v ^# accessions.txt > ids.txt && head ids.txt
 
