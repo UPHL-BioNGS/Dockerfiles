@@ -3,7 +3,7 @@ FROM staphb/ncbi-datasets:16.2.0 as fasta
     WORKDIR /ref
 
     COPY accessions.txt .
-    COPY unzip.sh .
+    COPY rename.sh .
 
     RUN grep -v ^# accessions.txt > ids.txt && head ids.txt
 
@@ -11,7 +11,7 @@ FROM staphb/ncbi-datasets:16.2.0 as fasta
 
     RUN unzip *zip
 
-    RUN mkdir prep && bash unzip.sh
+    RUN mkdir prep && bash rename.sh
 
 FROM ubuntu:jammy as app
 
