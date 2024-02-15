@@ -3,7 +3,7 @@ FROM python:3.9.17-slim as app
 # List all software versions are ARGs near the top of the dockerfile
 # 'ARG' sets environment variables during the build stage
 # ARG variables are ONLY available during image build, they do not persist in the final image
-ARG VER="0.7.2"
+ARG VER="0.7.1"
 
 # 'LABEL' instructions tag the image with metadata that might be important to the user
 LABEL base.image="python:3.9.17-slim"
@@ -26,6 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install and/or setup more things. Make /data for use as a working dir
 # For readability, limit one install per 'RUN' statement.
 RUN pip install --no-cache pango-collapse==${VER} && pango-collapse --help 
+
+RUN sed -i '121s|collapse_file_url = "https://raw.githubusercontent.com/MDU-PHL/pango-collapse/main/pango_collapse/collapse.txt"|collapse_file_url = "/usr/local/lib/python3.9/site-packages/pango_collapse/collapse.txt"|' /usr/local/lib/python3.9/site-packages/pango_collapse/main.py
+
 
 ENV PATH="$PATH" \
     LC_ALL=C
