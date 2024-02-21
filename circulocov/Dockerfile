@@ -5,7 +5,7 @@ ARG MINIMAP2_VER="2.26"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
-    cacertificates && \
+    ca-certificates && \
     apt-get autoclean && rm -rf /var/lib/apt/lists/*
 
 RUN pip install circulocov==${SOFTWARENAME_VER} && circulocov -h
