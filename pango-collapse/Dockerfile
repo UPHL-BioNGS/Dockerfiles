@@ -1,11 +1,7 @@
 FROM python:3.9.17-slim as app
 
-# List all software versions are ARGs near the top of the dockerfile
-# 'ARG' sets environment variables during the build stage
-# ARG variables are ONLY available during image build, they do not persist in the final image
 ARG VER="0.7.2"
 
-# 'LABEL' instructions tag the image with metadata that might be important to the user
 LABEL base.image="python:3.9.17-slim"
 LABEL dockerfile.version="1"
 LABEL software="pango-collapse"
@@ -16,16 +12,20 @@ LABEL license="https://github.com/MDU-PHL/pango-collapse?tab=GPL-3.0-1-ov-file#r
 LABEL maintainer="Erin Young"
 LABEL maintainer.email="eriny@utah.gov"
 
-# 'RUN' executes code during the build
-# Install dependencies via apt-get or yum if using a centos or fedora base
 RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
-    ca-certificates && \
+    ca-certificates \
+    wget && \
     apt-get autoclean && rm -rf /var/lib/apt/lists/*
 
-# Install and/or setup more things. Make /data for use as a working dir
-# For readability, limit one install per 'RUN' statement.
-RUN pip install --no-cache pango-collapse==${VER} && pango-collapse --help 
+RUN wget -q https://github.com/MDU-PHL/pango-collapse/archive/refs/tags/v${VER}.tar.gz && \
+    pip install v${VER}.tar.gz && \
+    tar -vxf v${VER}.tar.gz && \
+    rm -rf v${VER}.tar.gz && \
+    mkdir /pango-collapse && \
+    cp /pango-collapse-${VER}/pango_collapse/collapse.txt /pango-collapse && \
+    rm -rf /pango-collapse-${VER} && \
+    ls /pango-collapse/collapse.txt
 
 ENV PATH="$PATH" \
     LC_ALL=C
