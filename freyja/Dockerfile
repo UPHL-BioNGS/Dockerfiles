@@ -5,7 +5,7 @@ FROM mambaorg/micromamba:2.0.2 as app
 # Bioconda Freyja version
 ARG FREYJA_BASE_SOFTWARE_VERSION="1.5.1"
 # Set if you want to override with a specific Github version tag
-ARG FREYJA_UPDATE_SOFTWARE_VERSION="v1.5.2"
+ARG FREYJA_GITHUB_SOFTWARE_VERSION="1.5.2"
 
 # build and run as root users since micromamba image has 'mambauser' set as the $USER
 USER root
@@ -15,7 +15,7 @@ WORKDIR /
 LABEL base.image="mambaorg/micromamba:2.0.2"
 LABEL dockerfile.version="1"
 LABEL software="Freyja"
-LABEL software.version=${FREYJA_SOFTWARE_VERSION}
+LABEL software.version=${FREYJA_GITHUB_SOFTWARE_VERSION}
 LABEL description="Freyja is a tool to recover relative lineage abundances from mixed SARS-CoV-2 samples from a sequencing dataset (BAM aligned to the Hu-1 reference)"
 LABEL website="https://github.com/andersen-lab/Freyja"
 LABEL license="https://github.com/andersen-lab/Freyja/blob/main/LICENSE"
@@ -39,7 +39,7 @@ ENV PATH="/opt/conda/envs/freyja-env/bin:/opt/conda/envs/env/bin:${PATH}" \
     LC_ALL=C.UTF-8
 
 # Install freyja from Github source file
-RUN git clone --depth 1 --branch ${FREYJA_UPDATE_SOFTWARE_VERSION} https://github.com/andersen-lab/Freyja.git
+RUN git clone --depth 1 --branch v${FREYJA_GITHUB_SOFTWARE_VERSION} https://github.com/andersen-lab/Freyja.git
 RUN pip install ./Freyja
 
 RUN pip install pyarrow

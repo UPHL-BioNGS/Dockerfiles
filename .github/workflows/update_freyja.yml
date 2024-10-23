@@ -55,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./freyja/Dockerfile
-          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
+          build-args: FREYJA_GITHUB_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
           push: true
           tags: quay.io/uphl/freyja:${{ steps.strip.outputs.version }}-${{ steps.date.outputs.date }}
 
@@ -64,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./freyja/Dockerfile
-          build-args: FREYJA_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
+          build-args: FREYJA_GITHUB_SOFTWARE_VERSION=${{ steps.strip.outputs.version }}
           push: true
           tags: quay.io/uphl/freyja:latest   
 
