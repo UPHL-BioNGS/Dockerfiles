@@ -3,7 +3,7 @@ FROM mambaorg/micromamba:2.0.2 as app
 # Version arguments
 # ARG variables only persist during build time
 # Bioconda Freyja version
-ARG FREYJA_BASE_SOFTWARE_VERSION="1.5.1"
+ARG FREYJA_BASE_SOFTWARE_VERSION="1.5.2"
 # Set if you want to override with a specific Github version tag
 ARG FREYJA_GITHUB_SOFTWARE_VERSION="1.5.2"
 
