@@ -60,10 +60,10 @@ FROM app as test
 RUN freyja --help && freyja --version
 
 # Grab test data from Freyja version 1.3.4
-RUN wget -O /data/Freyja_WWSC2.bam https://github.com/StaPH-B/docker-builds/blob/master/freyja/1.3.4/tests/Freyja_WWSC2.bam?raw=true && \
-    wget -P /data https://raw.githubusercontent.com/StaPH-B/docker-builds/master/freyja/1.3.4/tests/Freyja_depths.tsv && \
-    wget -P /data https://raw.githubusercontent.com/StaPH-B/docker-builds/master/freyja/1.3.4/tests/Freyja_variants.tsv && \
-    wget -P /data https://raw.githubusercontent.com/StaPH-B/docker-builds/master/freyja/1.3.4/tests/nCoV-2019.reference.fasta
+RUN wget -O /data/Freyja_WWSC2.bam https://github.com/StaPH-B/docker-builds/blob/master/build-files/freyja/1.3.4/tests/Freyja_WWSC2.bam?raw=true && \
+    wget -P /data https://raw.githubusercontent.com/StaPH-B/docker-builds/master/build-files/freyja/1.3.4/tests/Freyja_depths.tsv && \
+    wget -P /data https://raw.githubusercontent.com/StaPH-B/docker-builds/master/build-files/freyja/1.3.4/tests/Freyja_variants.tsv && \
+    wget -P /data https://raw.githubusercontent.com/StaPH-B/docker-builds/master/build-files/freyja/1.3.4/tests/nCoV-2019.reference.fasta
 
 # Run Freyja
 RUN freyja variants /data/Freyja_WWSC2.bam --variants /data/test_variants.tsv --depths /data/test_depths.tsv --ref /data/nCoV-2019.reference.fasta && \
