@@ -91,6 +91,7 @@ jobs:
         id: db_version
         run: |
           # will add when database versions are added to other organisms
+          docker run freyja:update-${{ matrix.pathogen }} freyja demix --pathogen ${{ matrix.pathogen }} --version
           DB_VERSION=$(docker run freyja:update-${{ matrix.pathogen }} freyja demix --pathogen ${{ matrix.pathogen }} --version | grep . | grep -v Barcode | head -n 1)
           echo "DB version: $DB_VERSION"
 
