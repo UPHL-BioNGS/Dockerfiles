@@ -90,9 +90,8 @@ jobs:
       - name: Get freyja database version
         id: db_version
         run: |
-          # Run command and capture all output, then trim whitespace
-          DB_VERSION=$(docker run freyja:update-${{ matrix.pathogen }} freyja demix --version | grep . | grep -v Barcode | head -n 1)
-          
+          # will add when database versions are added to other organisms
+          DB_VERSION=$(docker run freyja:update-${{ matrix.pathogen }} freyja demix --pathogen ${{ matrix.pathogen }} --version | grep . | grep -v Barcode | head -n 1)
           echo "DB version: $DB_VERSION"
 
           # Create a tag-friendly version, e.g., "MPXV-2024-11-01"
@@ -100,10 +99,17 @@ jobs:
           echo "Final DB version tag: $VERSION_TAG"
           echo "version=$VERSION_TAG" >> $GITHUB_OUTPUT
 
+      - name: Get current date
+        id: date
+        run: |
+          date=$(date '+%Y-%m-%d')
+          echo "the date is $date"
+          echo "date=$date" >> $GITHUB_OUTPUT
+
       - name: Check if tag already exists on Quay
         id: check_quay_tag
         run: |
-          TAG="${{ needs.get-latest-freyja-version.outputs.version }}-${{ steps.db_version.outputs.version }}"
+          TAG="${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.date.outputs.date }}"
           echo "Checking for tag: quay.io/uphl/freyja:$TAG"
           
           # Query the Quay API.
@@ -130,7 +136,7 @@ jobs:
             FREYJA_SOFTWARE_VERSION=${{ needs.get-latest-freyja-version.outputs.version }}
             FREYJA_PATHOGEN=${{ matrix.pathogen }}
           tags: |
-            quay.io/uphl/freyja:${{ needs.get-latest-freyja-version.outputs.version }}-${{ steps.db_version.outputs.version }}
+            quay.io/uphl/freyja:${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.date.outputs.date }}
           # Enable GHA caching for faster builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -138,7 +144,7 @@ jobs:
       - name: Report skipped build
         if: steps.check_quay_tag.outputs.skip_build == 'true'
         run: |
-          echo "Skipped build and push for ${{ matrix.pathogen }} because tag ${{ needs.get-latest-freyja-version.outputs.version }}-${{ steps.db_version.outputs.version }} already exists."
+          echo "Skipped build and push for ${{ matrix.pathogen }} because tag ${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.date.outputs.date }} already exists."
 
       - name: Image digest
         if: steps.docker_build_and_push.outputs.digest
