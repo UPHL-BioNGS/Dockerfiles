@@ -1,0 +1,147 @@
+##### ------------------------------------------------------------------------------------------------ ##########
+# This caller workflow tests, builds, and pushes the image to Quay weekly.
+# It automatically finds the LATEST version of Freyja, builds it, and downloads the
+# most recent variant information for each specified pathogen.
+# It will skip the final push if the target tag already exists on Quay.io.
+##### ------------------------------------------------------------------------------------------------ #####
+name: Update Freyja for other organisms
+
+on:
+  workflow_dispatch: # Allows manual triggering
+  schedule:
+    - cron: '30 7 * * 1' # Runs weekly on Monday at 07:30 UTC
+
+run-name: Updating Freyja for all available organisms
+
+jobs:
+  # ---------------------------------------------------------------------------------
+  # JOB 1: Get the latest Freyja version tag from the upstream GitHub repo
+  # ---------------------------------------------------------------------------------
+  get-latest-freyja-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get latest Freyja release tag
+        id: get_version
+        run: |
+          # Query GitHub API for the latest release, extract the tag_name, and strip the leading 'v'
+          LATEST_TAG=$(curl -s "https://api.github.com/repos/andersen-lab/Freyja/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+          if [ -z "$LATEST_TAG" ]; then
+            echo "::error:: Could not fetch latest Freyja version tag from GitHub API."
+            exit 1
+          fi
+          echo "Found latest Freyja version: $LATEST_TAG"
+          echo "version=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+  # ---------------------------------------------------------------------------------
+  # JOB 2: Build and push an image for each pathogen
+  # ---------------------------------------------------------------------------------
+  update:
+    needs: get-latest-freyja-version # Wait for the version check to complete
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Prevents one failure from cancelling all other matrix jobs
+      matrix:
+        pathogen: [MPXV, H5NX, H5NX-cattle, H1N1pdm, FLU-B-VIC, H3N2, MEASLESN450, MEASLES, RSVa, RSVb, DENV1, D2, DENV3, DENV4]
+    
+    steps:
+      - name: Pull repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -----------------------------------------------------------------
+      # Login to Quay.io
+      # -----------------------------------------------------------------
+      - name: Login to Quay
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
+      - name: Set static Dockerfile path
+        id: dockerfile_info
+        run: |
+          # This assumes the Dockerfile is at this static path, not in a versioned folder
+          file_path="freyja_organisms/Dockerfile"
+          ls -l $file_path # Verify the file exists
+          echo "file=$file_path" >> $GITHUB_OUTPUT
+
+      - name: Build to test
+        id: docker_build_to_test
+        uses: docker/build-push-action@v5
+        with:
+          build-args: |
+            FREYJA_SOFTWARE_VERSION=${{ needs.get-latest-freyja-version.outputs.version }}
+            FREYJA_PATHOGEN=${{ matrix.pathogen }}
+          file: ${{ steps.dockerfile_info.outputs.file }}
+          target: test
+          load: true
+          push: false
+          tags: freyja:update-${{ matrix.pathogen }}
+          # Enable GHA caching for faster builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Get freyja database version
+        id: db_version
+        run: |
+          # Run command and capture all output, then trim whitespace
+          RAW_OUTPUT=$(docker run freyja:update-${{ matrix.pathogen }} freyja demix --version)
+          DB_VERSION=$(echo "$RAW_OUTPUT" | xargs) # xargs is a great way to trim whitespace
+          
+          echo "Raw 'demix --version' output: $RAW_OUTPUT"
+          echo "Parsed DB version: $DB_VERSION"
+
+          # Create a tag-friendly version, e.g., "MPXV-2024-11-01"
+          VERSION_TAG="${{ matrix.pathogen }}-${DB_VERSION}"
+          echo "Final DB version tag: $VERSION_TAG"
+          echo "version=$VERSION_TAG" >> $GITHUB_OUTPUT
+
+      - name: Check if tag already exists on Quay
+        id: check_quay_tag
+        run: |
+          TAG="${{ needs.get-latest-freyja-version.outputs.version }}-${{ steps.db_version.outputs.version }}"
+          echo "Checking for tag: quay.io/uphl/freyja:$TAG"
+          
+          # Query the Quay API.
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://quay.io/api/v1/repository/uphl/freyja/tag/${TAG}/images")
+          
+          if [ "$RESPONSE_CODE" -eq 200 ]; then
+            echo "Tag ${TAG} already exists on quay.io/uphl/freyja. Skipping build and push."
+            echo "skip_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag ${TAG} does not exist. Proceeding with build."
+            echo "skip_build=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Dockerfile
+        id: docker_build_and_push
+        # This step will only run if the tag does NOT exist
+        if: steps.check_quay_tag.outputs.skip_build == 'false'
+        uses: docker/build-push-action@v5
+        with:
+          file: ${{ steps.dockerfile_info.outputs.file }}
+          target: app
+          push: true
+          build-args: |
+            FREYJA_SOFTWARE_VERSION=${{ needs.get-latest-freyja-version.outputs.version }}
+            FREYJA_PATHOGEN=${{ matrix.pathogen }}
+          tags: |
+            quay.io/uphl/freyja:${{ needs.get-latest-freyja-version.outputs.version }}-${{ steps.db_version.outputs.version }}
+          # Enable GHA caching for faster builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Report skipped build
+        if: steps.check_quay_tag.outputs.skip_build == 'true'
+        run: |
+          echo "Skipped build and push for ${{ matrix.pathogen }} because tag ${{ needs.get-latest-freyja-version.outputs.version }}-${{ steps.db_version.outputs.version }} already exists."
+
+      - name: Image digest
+        if: steps.docker_build_and_push.outputs.digest
+        run: echo ${{ steps.docker_build_and_push.outputs.digest }}
