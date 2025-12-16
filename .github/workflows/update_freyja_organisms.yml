@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false # Prevents one failure from cancelling all other matrix jobs
       matrix:
-        pathogen: ['SARS-CoV-2', 'MPXV', 'H5NX', 'H5NX-cattle', 'H1N1pdm', 'FLU-B-VIC', 'H3N2', 'MEASLESN450', 'MEASLES', 'RSVa', 'RSVb', 'DENV1', 'DENV2', 'DENV3', 'DENV4']
+        pathogen: ['SARS-CoV-2', 'MPX', 'H5Nx', 'H5Nx-cattle', 'H1N1', 'FLU-B-VIC', 'H3N2', 'MEASLESgenome', 'RSVa', 'RSVb', 'DENV1', 'DENV2', 'DENV3', 'DENV4', 'MTB']
     
     steps:
       - name: Pull repo
@@ -92,10 +92,10 @@ jobs:
         run: |
           # will add when database versions are added to other organisms
           docker run freyja:update-${{ matrix.pathogen }} freyja demix --pathogen ${{ matrix.pathogen }} --version
-          DB_VERSION=$(docker run freyja:update-${{ matrix.pathogen }} freyja demix --pathogen ${{ matrix.pathogen }} --version | grep . | grep -v Barcode | head -n 1)
+          DB_VERSION=$(docker run freyja:update-${{ matrix.pathogen }} freyja demix --pathogen ${{ matrix.pathogen }} --version | tail -n 3 | head -n 1)
           echo "DB version: $DB_VERSION"
 
-          # Create a tag-friendly version, e.g., "MPXV-2024-11-01"
+          # Create a tag-friendly version, e.g., "MPX-2024-11-01"
           VERSION_TAG="${{ matrix.pathogen }}-${DB_VERSION}"
           echo "Final DB version tag: $VERSION_TAG"
           echo "version=$VERSION_TAG" >> $GITHUB_OUTPUT
