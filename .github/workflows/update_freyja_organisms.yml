@@ -136,7 +136,7 @@ jobs:
           build-args: |
             FREYJA_SOFTWARE_VERSION=${{ needs.get-latest-freyja-version.outputs.version }}
             FREYJA_PATHOGEN=${{ matrix.pathogen }}
-          tags: ${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.db_version.outputs.version }}-${{ steps.date.outputs.date }}
+          tags: quay.io/uphl/freyja:${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.db_version.outputs.version }}-${{ steps.date.outputs.date }}
           # Enable GHA caching for faster builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
