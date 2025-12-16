@@ -96,7 +96,7 @@ jobs:
           echo "DB version: $DB_VERSION"
 
           # Create a tag-friendly version, e.g., "MPX-2024-11-01"
-          VERSION_TAG="${{ matrix.pathogen }}-${DB_VERSION}"
+          VERSION_TAG="${DB_VERSION}"
           echo "Final DB version tag: $VERSION_TAG"
           echo "version=$VERSION_TAG" >> $GITHUB_OUTPUT
 
