@@ -110,7 +110,7 @@ jobs:
       - name: Check if tag already exists on Quay
         id: check_quay_tag
         run: |
-          TAG="${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.date.outputs.date }}"
+          TAG="${{ needs.get-latest-freyja-version.outputs.version }}-${{ matrix.pathogen }}-${{ steps.db_version.outputs.version }}-${{ steps.date.outputs.date }}"
           echo "Checking for tag: quay.io/uphl/freyja:$TAG"
           
           # Query the Quay API.
